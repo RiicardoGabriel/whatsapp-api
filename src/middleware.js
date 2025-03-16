@@ -20,6 +20,7 @@ const apikey = async (req, res, next) => {
   */
   if (globalApiKey) {
     const apiKey = req.headers['x-api-key']
+    console.log(apiKey)
     if (!apiKey || apiKey !== globalApiKey) {
       return sendErrorResponse(res, 403, 'Invalid API key')
     }

@@ -8,7 +8,6 @@ process.env.ENABLE_LOCAL_CALLBACK_EXAMPLE = 'TRUE'
 process.env.BASE_WEBHOOK_URL = 'http://localhost:3000/localCallbackExample'
 
 const app = require('../src/app')
-jest.mock('qrcode-terminal')
 
 let server
 beforeAll(() => {
