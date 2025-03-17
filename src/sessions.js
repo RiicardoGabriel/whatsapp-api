@@ -1,4 +1,5 @@
 const { Client, LocalAuth } = require('whatsapp-web.js')
+const cron = require('node-cron')
 const fs = require('fs')
 const path = require('path')
 const sessions = new Map()
@@ -442,7 +443,7 @@ const deleteSession = async (sessionId, validation) => {
 }
 
 // Function to handle session flush
-const flushSessions = async (deleteOnlyInactive) => {
+const flushSessions = async () => {
   try {
     // Read the contents of the sessions folder
     const files = await fs.promises.readdir(sessionFolderPath)
@@ -453,7 +454,7 @@ const flushSessions = async (deleteOnlyInactive) => {
       if (match) {
         const sessionId = match[1]
         const validation = await validateSession(sessionId)
-        if (!deleteOnlyInactive || !validation.success) {
+        if (!validation.success) {
           await deleteSession(sessionId, validation)
         }
       }
@@ -463,6 +464,13 @@ const flushSessions = async (deleteOnlyInactive) => {
     throw error
   }
 }
+
+// Agenda a execução da função a cada 1 hora
+cron.schedule('0 * * * *', async () => {
+  await flushSessions() // Deleta apenas sessões inativas
+}, {
+  timezone: 'America/Sao_Paulo'
+})
 
 module.exports = {
   sessions,

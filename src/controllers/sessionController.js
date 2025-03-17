@@ -1,5 +1,5 @@
 const qr = require('qr-image')
-const { setupSession, deleteSession, reloadSession, validateSession, flushSessions, sessions } = require('../sessions')
+const { setupSession, deleteSession, reloadSession, validateSession, sessions } = require('../sessions')
 const { sendErrorResponse, waitForNestedObject } = require('../utils')
 
 /**
@@ -283,93 +283,11 @@ const terminateSession = async (req, res) => {
   }
 }
 
-/**
- * Terminates all inactive sessions.
- *
- * @function
- * @async
- * @param {Object} req - The HTTP request object.
- * @param {Object} res - The HTTP response object.
- * @returns {Promise<void>}
- * @throws {Error} If there was an error terminating the sessions.
- */
-const terminateInactiveSessions = async (req, res) => {
-  // #swagger.summary = 'Terminate inactive sessions'
-  // #swagger.description = 'Terminates all inactive sessions.'
-  try {
-    await flushSessions(true)
-    /* #swagger.responses[200] = {
-      description: "Sessions terminated.",
-      content: {
-        "application/json": {
-          schema: { "$ref": "#/definitions/TerminateSessionsResponse" }
-        }
-      }
-    }
-    */
-    res.json({ success: true, message: 'Flush completed successfully' })
-  } catch (error) {
-    /* #swagger.responses[500] = {
-      description: "Server Failure.",
-      content: {
-        "application/json": {
-          schema: { "$ref": "#/definitions/ErrorResponse" }
-        }
-      }
-    }
-    */
-    console.log('terminateInactiveSessions ERROR', error)
-    sendErrorResponse(res, 500, error.message)
-  }
-}
-
-/**
- * Terminates all sessions.
- *
- * @function
- * @async
- * @param {Object} req - The HTTP request object.
- * @param {Object} res - The HTTP response object.
- * @returns {Promise<void>}
- * @throws {Error} If there was an error terminating the sessions.
- */
-const terminateAllSessions = async (req, res) => {
-  // #swagger.summary = 'Terminate all sessions'
-  // #swagger.description = 'Terminates all sessions.'
-  try {
-    await flushSessions(false)
-    /* #swagger.responses[200] = {
-      description: "Sessions terminated.",
-      content: {
-        "application/json": {
-          schema: { "$ref": "#/definitions/TerminateSessionsResponse" }
-        }
-      }
-    }
-    */
-    res.json({ success: true, message: 'Flush completed successfully' })
-  } catch (error) {
-  /* #swagger.responses[500] = {
-      description: "Server Failure.",
-      content: {
-        "application/json": {
-          schema: { "$ref": "#/definitions/ErrorResponse" }
-        }
-      }
-    }
-    */
-    console.log('terminateAllSessions ERROR', error)
-    sendErrorResponse(res, 500, error.message)
-  }
-}
-
 module.exports = {
   startSession,
   statusSession,
   sessionQrCode,
   sessionQrCodeImage,
   restartSession,
-  terminateSession,
-  terminateInactiveSessions,
-  terminateAllSessions
+  terminateSession
 }

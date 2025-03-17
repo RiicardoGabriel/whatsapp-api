@@ -42,8 +42,6 @@ sessionRouter.get('/qr/:sessionId', middleware.sessionNameValidation, sessionCon
 sessionRouter.get('/qr/:sessionId/image', middleware.sessionNameValidation, sessionController.sessionQrCodeImage)
 sessionRouter.get('/restart/:sessionId', middleware.sessionNameValidation, sessionController.restartSession)
 sessionRouter.get('/terminate/:sessionId', middleware.sessionNameValidation, sessionController.terminateSession)
-sessionRouter.get('/terminateInactive', sessionController.terminateInactiveSessions)
-sessionRouter.get('/terminateAll', sessionController.terminateAllSessions)
 
 /**
  * ================
