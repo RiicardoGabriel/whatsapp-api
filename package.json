@@ -4,12 +4,13 @@
   "description": "REST API wrapper for whatsapp-web.js",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "cross-env NODE_ENV=production node server.js",
+    "dev": "cross-env NODE_ENV=development node server.js",
     "test": "jest --runInBand",
     "swagger": "node swagger.js"
   },
   "dependencies": {
-    "axios": "^1.7.7",
+    "axios": "^1.10.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
@@ -20,6 +21,7 @@
     "whatsapp-web.js": "^1.26.0"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "eslint": "^8.38.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",

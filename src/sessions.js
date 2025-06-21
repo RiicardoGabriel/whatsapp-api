@@ -5,6 +5,7 @@ const path = require('path')
 const sessions = new Map()
 const { baseWebhookURL, sessionFolderPath, maxAttachmentSize, setMessagesAsSeen, webVersion, webVersionCacheType, recoverSessions } = require('./config')
 const { triggerWebhook, waitForNestedObject, checkIfEventisEnabled } = require('./utils')
+const { default: axios } = require('axios')
 
 // Function to validate if the session is ready
 const validateSession = async (sessionId) => {
@@ -103,7 +104,8 @@ const setupSession = (sessionId) => {
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
       },
       userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
-      authStrategy: localAuth
+      authStrategy: localAuth,
+      downloadMedia: false
     }
 
     if (webVersion) {
@@ -239,18 +241,45 @@ const initializeEvents = (client, sessionId) => {
     .then(_ => {
       client.on('message', async (message) => {
         triggerWebhook(sessionWebhook, sessionId, 'message', { message })
-        if (message.hasMedia && message._data?.size < maxAttachmentSize) {
-          // custom service event
-          checkIfEventisEnabled('media').then(_ => {
-            message.downloadMedia().then(messageMedia => {
-              triggerWebhook(sessionWebhook, sessionId, 'media', { messageMedia, message })
-            }).catch(e => {
-              console.log('Download media error:', e.message)
-            })
+
+        const isProduction = process.env.NODE_ENV === 'production'
+
+        const url = isProduction
+          ? 'https://api.sweetpdv.com.br/whatsapp-integracao/get-infos'
+          : 'http://192.168.8.199:3001/whatsapp-integracao/get-infos'
+
+        // Verifica se é uma nova conversa
+        const chat = await message.getChat()
+        const messages = await chat.fetchMessages()
+
+        const nowInBrazil = new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' })
+        const today = new Date(nowInBrazil)
+        today.setHours(0, 0, 0, 0)
+
+        // Filtra a mensagem atual e verifica apenas mensagens anteriores
+        const hasMessageToday = messages
+          .filter(msg => msg.id.id !== message.id.id) // Remove a mensagem atual
+          .some(msg => {
+            const msgDateInBrazil = new Date(msg.timestamp * 1000).toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' })
+            const msgDate = new Date(msgDateInBrazil)
+            msgDate.setHours(0, 0, 0, 0)
+            return msgDate.getTime() === today.getTime()
           })
+
+        if (!hasMessageToday) {
+          try {
+            const { data } = await axios.post(url, { store_id: sessionId })
+            console.log(data);
+            
+            if (data?.saudacao && data?.mensagemSaudacao) {
+              await client.sendMessage(chat.id._serialized, data?.mensagemSaudacao)
+            }
+          } catch (error) {
+            console.error('Erro ao fazer requisição para a API:', error.message)
+          }
         }
+
         if (setMessagesAsSeen) {
-          const chat = await message.getChat()
           chat.sendSeen()
         }
       })
