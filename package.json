@@ -18,10 +18,10 @@
     "node-cron": "^3.0.3",
     "qr-image": "^3.2.0",
     "swagger-ui-express": "^5.0.1",
-    "whatsapp-web.js": "^1.26.0"
+    "whatsapp-web.js": "^1.26.0",
+    "cross-env": "^7.0.3"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3",
     "eslint": "^8.38.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",
