@@ -3,7 +3,7 @@ const cron = require('node-cron')
 const fs = require('fs')
 const path = require('path')
 const sessions = new Map()
-const { baseWebhookURL, sessionFolderPath, maxAttachmentSize, setMessagesAsSeen, webVersion, webVersionCacheType, recoverSessions } = require('./config')
+const { baseWebhookURL, sessionFolderPath, setMessagesAsSeen, webVersion, webVersionCacheType, recoverSessions } = require('./config')
 const { triggerWebhook, waitForNestedObject, checkIfEventisEnabled } = require('./utils')
 const { default: axios } = require('axios')
 
@@ -266,11 +266,9 @@ const initializeEvents = (client, sessionId) => {
             return msgDate.getTime() === today.getTime()
           })
 
-        if (!hasMessageToday) {
+        if (!chat.isGroup && !hasMessageToday) {
           try {
             const { data } = await axios.post(url, { store_id: sessionId })
-            console.log(data);
-            
             if (data?.saudacao && data?.mensagemSaudacao) {
               await client.sendMessage(chat.id._serialized, data?.mensagemSaudacao)
             }
